@@ -1,8 +1,8 @@
 package cn.pandadb.tools.importer
 
 import java.io.File
-
 import cn.pandadb.kernel.PDBMetaData
+import cn.pandadb.kernel.kv.RocksDBStorage
 import org.apache.logging.log4j.scala.Logging
 
 import scala.io.Source
@@ -21,14 +21,16 @@ object PandaImporter extends Logging{
   def main(args: Array[String]): Unit = {
     // args: dbPath, nodeHead file path, node file path, relHead file path, relation file path
     _argsCheck(args)
-    val nodeImporter = new PNodeImporter(args(0), new File(args(1)), new File(args(2)))
-    val relationImporter = new PRelationImporter(args(0), new File(args(3)), new File(args(4)))
+    val soloDB = RocksDBStorage.getInitDB(args(0))
+    val nodeImporter = new PNodeImporter(args(0), new File(args(1)), new File(args(2)), soloDB)
+    val relationImporter = new PRelationImporter(args(0), new File(args(3)), new File(args(4)), soloDB)
     logger.info("Import task started.")
     nodeImporter.importNodes()
     relationImporter.importRelations()
     PDBMetaData.persist(args(0))
     logger.info("import task finished.")
   }
+
 
   private def _argsCheck(args: Array[String]): Boolean = {
     if(args.length!=5)

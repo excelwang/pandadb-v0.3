@@ -20,11 +20,11 @@ import scala.io.Source
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PandaImporterTest extends Logging {
-  val dbPath: String = "C://PandaDB/base_1kw"
-  val nodeHeadFile: File = new File("D:\\GitSpace\\ScalaUtils\\output//nodeHead.csv")
-  val nodeFile: File = new File("D://GitSpace//ScalaUtils//output//nodes1kw.csv")
-  val relationHeadFile: File = new File("D:\\GitSpace\\ScalaUtils\\output//relationHead.csv")
-  val relationFile: File = new File("D://GitSpace//ScalaUtils//output//edges1kw.csv")
+  val dbPath: String = "D://PandaDB-tmp/100M"
+  val nodeHeadFile: File = new File("D://PandaDB-tmp/bench/csv/nodeHead.csv")
+  val nodeFile: File = new File("D:\\IDEA\\ScalaUtils\\nodes-100m.csv")
+  val relationHeadFile: File = new File("D://PandaDB-tmp/bench/csv/relationHead.csv")
+  val relationFile: File = new File("D:\\IDEA\\ScalaUtils\\rels-100m.csv")
 
   // nodePropHead: id_p:Long	idStr:String	flag:Boolean	name:String
   // relPropHead: fromID:long, toID:String, weight:int

@@ -10,14 +10,20 @@ import cn.pandadb.kernel.store.{NodeStoreSPI, StoredNodeWithProperty}
 
 class NodeStoreAPI(dbPath: String) extends NodeStoreSPI {
 
-  private val nodeDB = RocksDBStorage.getDB(s"${dbPath}/nodes")
-  private val nodeStore = new NodeStore(nodeDB)
-  private val nodeLabelDB = RocksDBStorage.getDB(s"${dbPath}/nodeLabel")
-  private val nodeLabelStore = new NodeLabelStore(nodeLabelDB)
-  private val metaDB = RocksDBStorage.getDB(s"${dbPath}/nodeMeta")
-  private val nodeLabelName = new NodeLabelNameStore(metaDB)
-  private val propertyName = new PropertyNameStore(metaDB)
-  private val idGenerator = new NodeIdGenerator(metaDB)
+  private val soloDB = RocksDBStorage.getDB(s"${dbPath}/solo")
+  private val nodeStore = new NodeStore(soloDB)
+  private val nodeLabelStore = new NodeLabelStore(soloDB)
+  private val nodeLabelName = new NodeLabelNameStore(soloDB)
+  private val propertyName = new PropertyNameStore(soloDB)
+  private val idGenerator = new NodeIdGenerator(soloDB)
+//  private val nodeDB = RocksDBStorage.getDB(s"${dbPath}/nodes")
+//  private val nodeStore = new NodeStore(nodeDB)
+//  private val nodeLabelDB = RocksDBStorage.getDB(s"${dbPath}/nodeLabel")
+//  private val nodeLabelStore = new NodeLabelStore(nodeLabelDB)
+//  private val metaDB = RocksDBStorage.getDB(s"${dbPath}/nodeMeta")
+//  private val nodeLabelName = new NodeLabelNameStore(metaDB)
+//  private val propertyName = new PropertyNameStore(metaDB)
+//  private val idGenerator = new NodeIdGenerator(metaDB)
 
   val NONE_LABEL_ID: Int = -1
 
@@ -146,9 +152,10 @@ class NodeStoreAPI(dbPath: String) extends NodeStoreSPI {
 
   override def close(): Unit ={
     idGenerator.flush()
-    nodeDB.close()
-    nodeLabelDB.close()
-    metaDB.close()
+    soloDB.close()
+//    nodeDB.close()
+//    nodeLabelDB.close()
+//    metaDB.close()
   }
 
   override def newNodeId(): Long = {

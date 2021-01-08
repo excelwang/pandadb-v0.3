@@ -5,13 +5,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
-
 import cn.pandadb.kernel.PDBMetaData
 import cn.pandadb.kernel.kv.{ByteUtils, KeyHandler, RocksDBStorage}
 import cn.pandadb.kernel.store.StoredRelationWithProperty
 import cn.pandadb.kernel.util.serializer.RelationSerializer
 import org.apache.logging.log4j.scala.Logging
-import org.rocksdb.{FlushOptions, WriteBatch, WriteOptions}
+import org.rocksdb.{FlushOptions, RocksDB, WriteBatch, WriteOptions}
 
 import scala.util.Random
 
@@ -26,7 +25,7 @@ import scala.util.Random
 /**
  * protocol: :relId(long), :fromId(long), :toId(long), :edgetype(string), propName1:type, ...
  */
-class PRelationImporter(dbPath: String, headFile: File, edgeFile: File) extends Importer with Logging{
+class PRelationImporter(dbPath: String, headFile: File, edgeFile: File, soloDB: RocksDB) extends Importer with Logging{
 
   override val importerFileReader = new ImporterFileReader(edgeFile, 500000)
   override var propSortArr: Array[Int] = null
@@ -35,11 +34,11 @@ class PRelationImporter(dbPath: String, headFile: File, edgeFile: File) extends 
   override val service: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
   service.scheduleWithFixedDelay(importerFileReader.fillQueue, 0, 50, TimeUnit.MILLISECONDS)
   service.scheduleAtFixedRate(closer, 1, 1, TimeUnit.SECONDS)
-
-  val relationDB = RocksDBStorage.getInitDB(s"${dbPath}/rels")
-  val inRelationDB = RocksDBStorage.getInitDB(s"${dbPath}/inEdge")
-  val outRelationDB = RocksDBStorage.getInitDB(s"${dbPath}/outEdge")
-  val relationTypeDB = RocksDBStorage.getInitDB(s"${dbPath}/relLabelIndex")
+//  val soloDB = RocksDBStorage.getInitDB(s"${dbPath}")
+//  val relationDB = RocksDBStorage.getInitDB(s"${dbPath}/rels")
+//  val inRelationDB = RocksDBStorage.getInitDB(s"${dbPath}/inEdge")
+//  val outRelationDB = RocksDBStorage.getInitDB(s"${dbPath}/outEdge")
+//  val relationTypeDB = RocksDBStorage.getInitDB(s"${dbPath}/relLabelIndex")
 
   var globalCount: AtomicLong = new AtomicLong(0)
   val estEdgeCount: Long = estLineCount(edgeFile)
@@ -51,10 +50,10 @@ class PRelationImporter(dbPath: String, headFile: File, edgeFile: File) extends 
 
   def importRelations(): Unit ={
     importData()
-    relationDB.close()
-    inRelationDB.close()
-    outRelationDB.close()
-    relationTypeDB.close()
+    soloDB.close()
+//    inRelationDB.close()
+//    outRelationDB.close()
+//    relationTypeDB.close()
     logger.info(s"$globalCount relations imported.")
   }
 
@@ -76,25 +75,25 @@ class PRelationImporter(dbPath: String, headFile: File, edgeFile: File) extends 
           val relation = _wrapEdge(lineArr)
           val serializedRel = serializer.serialize(relation)
           storeBatch.put(KeyHandler.relationKeyToBytes(relation.id), serializedRel)
-          inBatch.put(KeyHandler.edgeKeyToBytes(relation.to, relation.typeId, relation.from), ByteUtils.longToBytes(relation.id))
-          outBatch.put(KeyHandler.edgeKeyToBytes(relation.from, relation.typeId, relation.to), ByteUtils.longToBytes(relation.id))
+          inBatch.put(KeyHandler.outEdgeKeyToBytes(relation.to, relation.typeId, relation.from), ByteUtils.longToBytes(relation.id))
+          outBatch.put(KeyHandler.outEdgeKeyToBytes(relation.from, relation.typeId, relation.to), ByteUtils.longToBytes(relation.id))
           labelBatch.put(KeyHandler.relationLabelIndexKeyToBytes(relation.typeId, relation.id), Array.emptyByteArray)
 
           if(innerCount % 1000000 == 0) {
-            relationDB.write(writeOptions, storeBatch)
-            inRelationDB.write(writeOptions, inBatch)
-            outRelationDB.write(writeOptions, outBatch)
-            relationTypeDB.write(writeOptions, labelBatch)
+            soloDB.write(writeOptions, storeBatch)
+            soloDB.write(writeOptions, inBatch)
+            soloDB.write(writeOptions, outBatch)
+            soloDB.write(writeOptions, labelBatch)
             storeBatch.clear()
             inBatch.clear()
             outBatch.clear()
             labelBatch.clear()
           }
         })
-        relationDB.write(writeOptions, storeBatch)
-        inRelationDB.write(writeOptions, inBatch)
-        outRelationDB.write(writeOptions, outBatch)
-        relationTypeDB.write(writeOptions,labelBatch)
+        soloDB.write(writeOptions, storeBatch)
+        soloDB.write(writeOptions, inBatch)
+        soloDB.write(writeOptions, outBatch)
+        soloDB.write(writeOptions,labelBatch)
         storeBatch.clear()
         inBatch.clear()
         outBatch.clear()
@@ -109,10 +108,10 @@ class PRelationImporter(dbPath: String, headFile: File, edgeFile: File) extends 
     }
 
     val flushOptions = new FlushOptions
-    relationDB.flush(flushOptions)
-    inRelationDB.flush(flushOptions)
-    outRelationDB.flush(flushOptions)
-    relationTypeDB.flush(flushOptions)
+    soloDB.flush(flushOptions)
+//    soloDB.flush(flushOptions)
+//    soloDB.flush(flushOptions)
+//    soloDB.flush(flushOptions)
     logger.info(s"$innerCount, $taskId")
     true
   }

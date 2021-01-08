@@ -13,18 +13,26 @@ import cn.pandadb.kernel.store.{RelationStoreSPI, StoredRelation, StoredRelation
  */
 class RelationStoreAPI(dbPath: String) extends RelationStoreSPI{
 
-  private val relationDB = RocksDBStorage.getDB(s"${dbPath}/rels")
-  private val relationStore = new RelationPropertyStore(relationDB)
-  private val inRelationDB = RocksDBStorage.getDB(s"${dbPath}/inEdge")
-  private val inRelationStore = new RelationDirectionStore(inRelationDB, RelationDirection.IN)
-  private val outRelationDB = RocksDBStorage.getDB(s"${dbPath}/outEdge")
-  private val outRelationStore = new RelationDirectionStore(outRelationDB, RelationDirection.OUT)
-  private val relationLabelDB = RocksDBStorage.getDB(s"${dbPath}/relLabelIndex")
-  private val relationLabelStore = new RelationLabelIndex(relationLabelDB)
-  private val metaDB = RocksDBStorage.getDB(s"${dbPath}/relationMeta")
-  private val relationTypeNameStore = new RelationTypeNameStore(metaDB)
-  private val propertyName = new PropertyNameStore(metaDB)
-  private val relationIdGenerator = new RelationIdGenerator(metaDB)
+  private val soloDB = RocksDBStorage.getDB(s"${dbPath}/solo")
+  private val relationStore = new RelationPropertyStore(soloDB)
+  private val inRelationStore = new RelationDirectionStore(soloDB, RelationDirection.IN)
+  private val outRelationStore = new RelationDirectionStore(soloDB, RelationDirection.OUT)
+  private val relationLabelStore = new RelationLabelIndex(soloDB)
+  private val relationTypeNameStore = new RelationTypeNameStore(soloDB)
+  private val propertyName = new PropertyNameStore(soloDB)
+  private val relationIdGenerator = new RelationIdGenerator(soloDB)
+//  private val relationDB = RocksDBStorage.getDB(s"${dbPath}/rels")
+//  private val relationStore = new RelationPropertyStore(relationDB)
+//  private val inRelationDB = RocksDBStorage.getDB(s"${dbPath}/inEdge")
+//  private val inRelationStore = new RelationDirectionStore(inRelationDB, RelationDirection.IN)
+//  private val outRelationDB = RocksDBStorage.getDB(s"${dbPath}/outEdge")
+//  private val outRelationStore = new RelationDirectionStore(outRelationDB, RelationDirection.OUT)
+//  private val relationLabelDB = RocksDBStorage.getDB(s"${dbPath}/relLabelIndex")
+//  private val relationLabelStore = new RelationLabelIndex(relationLabelDB)
+//  private val metaDB = RocksDBStorage.getDB(s"${dbPath}/relationMeta")
+//  private val relationTypeNameStore = new RelationTypeNameStore(metaDB)
+//  private val propertyName = new PropertyNameStore(metaDB)
+//  private val relationIdGenerator = new RelationIdGenerator(metaDB)
 
   override def allRelationTypes(): Array[String] = relationTypeNameStore.mapString2Int.keys.toArray
 
@@ -119,11 +127,12 @@ class RelationStoreAPI(dbPath: String) extends RelationStoreSPI{
 
   override def close(): Unit ={
     relationIdGenerator.flush()
-    relationStore.close()
-    inRelationStore.close()
-    outRelationDB.close()
-    metaDB.close()
-    relationLabelStore.close()
+//    relationStore.close()
+//    inRelationStore.close()
+//    outRelationDB.close()
+//    metaDB.close()
+    soloDB.close()
+//    relationLabelStore.close()
   }
 
   override def newRelationId(): Long = {

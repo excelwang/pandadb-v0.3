@@ -5,12 +5,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Executors, ScheduledExecutorService, TimeUnit}
-
 import cn.pandadb.kernel.PDBMetaData
 import cn.pandadb.kernel.kv.{KeyHandler, RocksDBStorage}
 import cn.pandadb.kernel.util.serializer.NodeSerializer
 import org.apache.logging.log4j.scala.Logging
-import org.rocksdb.{FlushOptions, WriteBatch, WriteOptions}
+import org.rocksdb.{FlushOptions, RocksDB, WriteBatch, WriteOptions}
 
 /**
  * @Author: Airzihao
@@ -24,7 +23,7 @@ import org.rocksdb.{FlushOptions, WriteBatch, WriteOptions}
 headMap(propName1 -> type, propName2 -> type ...)
  */
 // protocol: :ID :LABELS propName1:type1 proName2:type2
-class PNodeImporter(dbPath: String, nodeHeadFile: File, nodeFile: File) extends Importer with Logging {
+class PNodeImporter(dbPath: String, nodeHeadFile: File, nodeFile: File, soloDB: RocksDB) extends Importer with Logging {
 
   val NONE_LABEL_ID: Int = -1
   override protected var propSortArr: Array[Int] = null //Array(propId), record the sort of propId in head file
@@ -36,8 +35,9 @@ class PNodeImporter(dbPath: String, nodeHeadFile: File, nodeFile: File) extends 
   service.scheduleWithFixedDelay(importerFileReader.fillQueue, 0, 50, TimeUnit.MILLISECONDS)
   service.scheduleAtFixedRate(closer, 1, 1, TimeUnit.SECONDS)
 
-  private val nodeDB = RocksDBStorage.getInitDB(s"${dbPath}/nodes")
-  private val nodeLabelDB = RocksDBStorage.getInitDB(s"${dbPath}/nodeLabel")
+//  private val soloDB = RocksDBStorage.getInitDB(s"${dbPath}")
+//  private val nodeDB = RocksDBStorage.getInitDB(s"${dbPath}/nodes")
+//  private val nodeLabelDB = RocksDBStorage.getInitDB(s"${dbPath}/nodeLabel")
 
   val estNodeCount: Long = estLineCount(nodeFile)
   var globalCount: AtomicLong = new AtomicLong(0)
@@ -49,8 +49,8 @@ class PNodeImporter(dbPath: String, nodeHeadFile: File, nodeFile: File) extends 
 
   def importNodes(): Unit = {
     importData()
-    nodeDB.close()
-    nodeLabelDB.close()
+//    soloDB.close()
+//    nodeLabelDB.close()
     logger.info(s"$globalCount nodes imported.")
   }
 
@@ -73,14 +73,14 @@ class PNodeImporter(dbPath: String, nodeHeadFile: File, nodeFile: File) extends 
           labelBatch.put(pair._2, Array.emptyByteArray)
         })
         if (innerCount % 1000000 == 0) {
-          nodeDB.write(writeOptions, nodeBatch)
-          nodeLabelDB.write(writeOptions, labelBatch)
+          soloDB.write(writeOptions, nodeBatch)
+          soloDB.write(writeOptions, labelBatch)
           nodeBatch.clear()
           labelBatch.clear()
         }
       })
-      nodeDB.write(writeOptions, nodeBatch)
-      nodeLabelDB.write(writeOptions, labelBatch)
+      soloDB.write(writeOptions, nodeBatch)
+      soloDB.write(writeOptions, labelBatch)
       nodeBatch.clear()
       labelBatch.clear()
       if (globalCount.addAndGet(batchData.length) % 10000000 == 0) {
@@ -91,8 +91,8 @@ class PNodeImporter(dbPath: String, nodeHeadFile: File, nodeFile: File) extends 
       Thread.sleep(10*taskId)
     }
     val flushOptions = new FlushOptions
-    nodeDB.flush(flushOptions)
-    nodeLabelDB.flush(flushOptions)
+    soloDB.flush(flushOptions)
+//    soloDB.flush(flushOptions)
     logger.info(s"$innerCount, $taskId")
     true
   }

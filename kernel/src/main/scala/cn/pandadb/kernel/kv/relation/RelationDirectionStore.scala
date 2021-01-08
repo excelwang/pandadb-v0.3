@@ -27,8 +27,8 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
    */
 
   def getKey(relation: StoredRelation): Array[Byte] =
-    if (DIRECTION == IN) KeyHandler.edgeKeyToBytes(relation.to, relation.typeId, relation.from)
-    else                 KeyHandler.edgeKeyToBytes(relation.from, relation.typeId, relation.to)
+    if (DIRECTION == IN) KeyHandler.inEdgeKeyToBytes(relation.to, relation.typeId, relation.from)
+    else                 KeyHandler.outEdgeKeyToBytes(relation.from, relation.typeId, relation.to)
 
   def set(relation: StoredRelation): Unit = {
     val keyBytes = getKey(relation)
@@ -42,18 +42,18 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
 
   def deleteRange(firstId: Long): Unit = {
     db.deleteRange(
-      KeyHandler.edgeKeyPrefixToBytes(firstId,0),
-      KeyHandler.edgeKeyPrefixToBytes(firstId, -1))
+      KeyHandler.outEdgeKeyPrefixToBytes(firstId,0),
+      KeyHandler.outEdgeKeyPrefixToBytes(firstId, -1))
   }
 
   def deleteRange(firstId: Long, typeId: Int): Unit = {
     db.deleteRange(
-      KeyHandler.edgeKeyToBytes(firstId, typeId, 0),
-      KeyHandler.edgeKeyToBytes(firstId, typeId, -1))
+      KeyHandler.outEdgeKeyToBytes(firstId, typeId, 0),
+      KeyHandler.outEdgeKeyToBytes(firstId, typeId, -1))
   }
 
   def get(node1: Long, edgeType: Int, node2: Long): Option[Long] = {
-    val keyBytes = KeyHandler.edgeKeyToBytes(node1, edgeType, node2)
+    val keyBytes = KeyHandler.outEdgeKeyToBytes(node1, edgeType, node2)
     val value = db.get(keyBytes)
     if (value!=null)
       Some(ByteUtils.getLong(value, 0))
@@ -62,12 +62,12 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
   }
 
   def getNodeIds(nodeId: Long): Iterator[Long] = {
-    val prefix = KeyHandler.edgeKeyPrefixToBytes(nodeId)
+    val prefix = KeyHandler.outEdgeKeyPrefixToBytes(nodeId)
     new NodeIdIterator(db, prefix)
   }
 
   def getNodeIds(nodeId: Long, edgeType: Int): Iterator[Long] = {
-    val prefix = KeyHandler.edgeKeyPrefixToBytes(nodeId, edgeType)
+    val prefix = KeyHandler.outEdgeKeyPrefixToBytes(nodeId, edgeType)
     new NodeIdIterator(db, prefix)
   }
 
@@ -85,12 +85,12 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
   }
 
   def getRelationIds(nodeId: Long): Iterator[Long] = {
-    val prefix = KeyHandler.edgeKeyPrefixToBytes(nodeId)
+    val prefix = KeyHandler.outEdgeKeyPrefixToBytes(nodeId)
     new RelationIdIterator(db, prefix)
   }
 
   def getRelationIds(nodeId: Long, edgeType: Int): Iterator[Long] = {
-    val prefix = KeyHandler.edgeKeyPrefixToBytes(nodeId, edgeType)
+    val prefix = KeyHandler.outEdgeKeyPrefixToBytes(nodeId, edgeType)
     new RelationIdIterator(db, prefix)
   }
 
@@ -108,12 +108,12 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
   }
 
   def getRelations(nodeId: Long): Iterator[StoredRelation] = {
-    val prefix = KeyHandler.edgeKeyPrefixToBytes(nodeId)
+    val prefix = KeyHandler.outEdgeKeyPrefixToBytes(nodeId)
     new RelationIterator(db, prefix)
   }
 
   def getRelations(nodeId: Long, edgeType: Int): Iterator[StoredRelation] = {
-    val prefix = KeyHandler.edgeKeyPrefixToBytes(nodeId, edgeType)
+    val prefix = KeyHandler.outEdgeKeyPrefixToBytes(nodeId, edgeType)
     new RelationIterator(db, prefix)
   }
 

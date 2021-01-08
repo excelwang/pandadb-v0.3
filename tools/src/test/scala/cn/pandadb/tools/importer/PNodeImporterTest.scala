@@ -16,9 +16,9 @@ class PNodeImporterTest {
   val headEdgeFile = new File("D://GitSpace//ScalaUtils//relationHead.csv")
   val dbPath = "C:\\PandaDB\\base_50M"
 
-  @Test
-  def test(): Unit = {
-    val importer = new PNodeImporter(dbPath, headNodeFile, srcNodeFile)
-    importer.importNodes()
-  }
+//  @Test
+//  def test(): Unit = {
+//    val importer = new PNodeImporter(dbPath, headNodeFile, srcNodeFile)
+//    importer.importNodes()
+//  }
 }

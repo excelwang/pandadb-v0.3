@@ -17,11 +17,15 @@ class IndexStoreAPI(dbPath: String) {
   type IndexId   = Int
 //  type Long    = Long
 
-  private val metaDB = RocksDBStorage.getDB(s"${dbPath}/indexMeta")
-  private val meta = new IndexMetaData(metaDB)
-  private val indexDB = RocksDBStorage.getDB(s"${dbPath}/index")
-  private val index = new IndexStore(indexDB)
-  private val indexIdGenerator = new IndexIdGenerator(metaDB)
+  private val soloDB = RocksDBStorage.getDB(s"${dbPath}/solo")
+  private val meta = new IndexMetaData(soloDB)
+  private val index = new IndexStore(soloDB)
+  private val indexIdGenerator = new IndexIdGenerator(soloDB)
+//  private val metaDB = RocksDBStorage.getDB(s"${dbPath}/indexMeta")
+//  private val meta = new IndexMetaData(metaDB)
+//  private val indexDB = RocksDBStorage.getDB(s"${dbPath}/index")
+//  private val index = new IndexStore(indexDB)
+//  private val indexIdGenerator = new IndexIdGenerator(metaDB)
 
   //indexId->([name, address], Store)
   private val fulltextIndexMap = new mutable.HashMap[Int, (Array[Int], FulltextIndexStore)]()
@@ -112,7 +116,8 @@ class IndexStoreAPI(dbPath: String) {
   }
 
   def findByPrefix(prefix: Array[Byte]): Iterator[Long] = {
-    val iter = indexDB.newIterator()
+    val iter = soloDB.newIterator()
+//    val iter = indexDB.newIterator()
     iter.seek(prefix)
     new Iterator[Long] (){
       override def hasNext: Boolean =
@@ -141,7 +146,8 @@ class IndexStoreAPI(dbPath: String) {
     val typePrefix  = KeyHandler.nodePropertyIndexTypePrefix(indexId, valueType)
     val startPrefix = KeyHandler.nodePropertyIndexKeyToBytes(indexId, valueType, startValue, startTail.toLong)
     val endPrefix   = KeyHandler.nodePropertyIndexKeyToBytes(indexId, valueType, endValue, endTail.toLong)
-    val iter = indexDB.newIterator()
+    val iter = soloDB.newIterator()
+//    val iter = indexDB.newIterator()
     iter.seekForPrev(endPrefix)
     val endKey = iter.key()
     iter.seek(startPrefix)
@@ -186,8 +192,9 @@ class IndexStoreAPI(dbPath: String) {
     findRange(indexId, IndexEncoder.FLOAT_CODE, IndexEncoder.encode(startValue), IndexEncoder.encode(endValue), startClosed, endClosed)
 
   def close(): Unit = {
-    indexDB.close()
-    metaDB.close()
+//    indexDB.close()
+//    metaDB.close()
+    soloDB.close()
     fulltextIndexMap.foreach(p=>p._2._2.close())
   }
 }
