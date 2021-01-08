@@ -8,5 +8,7 @@ class NodeLabelNameStore(rocksDB: RocksDB)  extends NameStore {
   override val key2ByteArrayFunc: Int => Array[Byte] = KeyHandler.nodeLabelKeyToBytes
   override val keyPrefixFunc: () => Array[Byte] = KeyHandler.nodeLabelKeyPrefixToBytes
   override val initInt: Int = 100000
+  println("begin loadAll")
   loadAll()
+  println("loadAll finished")
 }

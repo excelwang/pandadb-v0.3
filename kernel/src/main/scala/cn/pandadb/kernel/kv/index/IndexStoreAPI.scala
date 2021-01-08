@@ -2,6 +2,7 @@ package cn.pandadb.kernel.kv.index
 
 import cn.pandadb.kernel.kv.meta.{IndexIdGenerator, RelationIdGenerator}
 import cn.pandadb.kernel.kv.{ByteUtils, KeyHandler, RocksDBStorage}
+import org.rocksdb.RocksDB
 
 import scala.collection.mutable
 
@@ -12,12 +13,10 @@ import scala.collection.mutable
  * @Date 2020/12/23
  * @Version 0.1
  */
-class IndexStoreAPI(dbPath: String) {
+class IndexStoreAPI(soloDB: RocksDB) {
 
   type IndexId   = Int
 //  type Long    = Long
-
-  private val soloDB = RocksDBStorage.getDB(s"${dbPath}/solo")
   private val meta = new IndexMetaData(soloDB)
   private val index = new IndexStore(soloDB)
   private val indexIdGenerator = new IndexIdGenerator(soloDB)
@@ -29,7 +28,7 @@ class IndexStoreAPI(dbPath: String) {
 
   //indexId->([name, address], Store)
   private val fulltextIndexMap = new mutable.HashMap[Int, (Array[Int], FulltextIndexStore)]()
-  private val fulltextIndexPathPrefix = s"${dbPath}/index/fulltextIndex"
+  private val fulltextIndexPathPrefix = s"D:/PandaDB-tmp/100M.solo/index/fulltextIndex"
 
   def createIndex(label: Int, props: Array[Int]): IndexId =
     meta.getIndexId(label, props).getOrElse{
@@ -194,7 +193,7 @@ class IndexStoreAPI(dbPath: String) {
   def close(): Unit = {
 //    indexDB.close()
 //    metaDB.close()
-    soloDB.close()
+//    soloDB.close()
     fulltextIndexMap.foreach(p=>p._2._2.close())
   }
 }

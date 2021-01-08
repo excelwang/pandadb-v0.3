@@ -67,7 +67,10 @@ import scala.collection.mutable.ArrayBuffer
  */
 
 
-object PandaPhysicalPlanner {
+object
+
+
+PandaPhysicalPlanner {
   def process(input: LogicalOperator)(implicit context: LynxPlannerContext): PhysicalOperator = {
 
     input match {

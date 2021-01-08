@@ -3,6 +3,7 @@ package cn.pandadb.kernel.kv.relation
 import cn.pandadb.kernel.kv.RocksDBStorage
 import cn.pandadb.kernel.kv.meta.{NodeLabelNameStore, PropertyNameStore, RelationIdGenerator, RelationTypeNameStore}
 import cn.pandadb.kernel.store.{RelationStoreSPI, StoredRelation, StoredRelationWithProperty}
+import org.rocksdb.RocksDB
 
 /**
  * @ClassName RelationStoreAPI
@@ -11,9 +12,8 @@ import cn.pandadb.kernel.store.{RelationStoreSPI, StoredRelation, StoredRelation
  * @Date 2020/12/22
  * @Version 0.1
  */
-class RelationStoreAPI(dbPath: String) extends RelationStoreSPI{
+class RelationStoreAPI(soloDB: RocksDB) extends RelationStoreSPI{
 
-  private val soloDB = RocksDBStorage.getDB(s"${dbPath}/solo")
   private val relationStore = new RelationPropertyStore(soloDB)
   private val inRelationStore = new RelationDirectionStore(soloDB, RelationDirection.IN)
   private val outRelationStore = new RelationDirectionStore(soloDB, RelationDirection.OUT)
@@ -131,7 +131,7 @@ class RelationStoreAPI(dbPath: String) extends RelationStoreSPI{
 //    inRelationStore.close()
 //    outRelationDB.close()
 //    metaDB.close()
-    soloDB.close()
+//    soloDB.close()
 //    relationLabelStore.close()
   }
 

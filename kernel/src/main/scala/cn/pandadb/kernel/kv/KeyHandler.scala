@@ -55,7 +55,7 @@ object KeyHandler {
   // [nodeId(8Bytes), labelId(4Bytes)]
   def nodeLabelToBytes(nodeId: Long, labelId: Int): Array[Byte] = {
     val bytes = new Array[Byte](13)
-    ByteUtils.setByte(bytes, 0, KeyType.NodeLabel.id.toByte)
+    ByteUtils.setByte(bytes, 0, KeyType.NodeLabelIndex.id.toByte)
     ByteUtils.setLong(bytes, 1, nodeId)
     ByteUtils.setInt(bytes, 9, labelId)
     bytes
@@ -64,7 +64,7 @@ object KeyHandler {
   // [nodeId(8Bytes), ----]
   def nodeLabelPrefix(nodeId: Long): Array[Byte] = {
     val bytes = new Array[Byte](9)
-    ByteUtils.setByte(bytes, 0, KeyType.NodeLabel.id.toByte)
+    ByteUtils.setByte(bytes, 0, KeyType.NodeLabelIndex.id.toByte)
     ByteUtils.setLong(bytes, 1, nodeId)
     bytes
   }

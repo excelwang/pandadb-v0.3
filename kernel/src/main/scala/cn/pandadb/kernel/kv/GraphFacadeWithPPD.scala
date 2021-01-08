@@ -3,6 +3,8 @@ package cn.pandadb.kernel.kv
 import cn.pandadb.kernel.GraphService
 import cn.pandadb.kernel.kv.index.IndexStoreAPI
 import cn.pandadb.kernel.kv.meta.{NameStore, Statistics}
+import cn.pandadb.kernel.kv.node.NodeStoreAPI
+import cn.pandadb.kernel.kv.relation.RelationStoreAPI
 import cn.pandadb.kernel.optimizer.PandaCypherSession
 import cn.pandadb.kernel.store._
 import org.apache.logging.log4j.scala.Logging
@@ -11,13 +13,17 @@ import org.opencypher.okapi.api.graph.CypherResult
 import org.opencypher.okapi.api.value.CypherValue
 import org.opencypher.okapi.api.value.CypherValue.{CypherMap, Node, Relationship}
 
-class GraphFacadeWithPPD( nodeStore: NodeStoreSPI,
-                          relationStore: RelationStoreSPI,
-                          indexStore: IndexStoreAPI,
-                          statistics: Statistics,
+class GraphFacadeWithPPD(val dbPath: String,
                           onClose: => Unit
                  ) extends Logging with GraphService {
-
+  private val soloDB = RocksDBStorage.getDB(dbPath)
+  println("getDB finished")
+  val nodeStore: NodeStoreSPI = new NodeStoreAPI(soloDB)
+  println("nodeStore finished")
+  val relationStore: RelationStoreSPI = new RelationStoreAPI(soloDB)
+  val indexStore: IndexStoreAPI = new IndexStoreAPI(soloDB)
+  println("storing finished")
+  val statistics = new Statistics(dbPath)
   private val propertyGraph = new PandaCypherSession().createPropertyGraph(
     new PandaPropertyGraphScanImpl(nodeStore, relationStore, indexStore, statistics),
     new PandaPropertyGraphWriterImpl(nodeStore, relationStore, indexStore, statistics)
@@ -37,6 +43,7 @@ class GraphFacadeWithPPD( nodeStore: NodeStoreSPI,
     relationStore.close()
     indexStore.close()
     statistics.close()
+    soloDB.close()
     onClose
   }
   

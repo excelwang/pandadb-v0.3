@@ -3,19 +3,24 @@ package cn.pandadb.kernel.kv.node
 import cn.pandadb.kernel.kv.RocksDBStorage
 import cn.pandadb.kernel.kv.meta.{NodeIdGenerator, NodeLabelNameStore, PropertyNameStore}
 import cn.pandadb.kernel.store.{NodeStoreSPI, StoredNodeWithProperty}
+import org.rocksdb.RocksDB
 
 /**
  * TODO
  */
 
-class NodeStoreAPI(dbPath: String) extends NodeStoreSPI {
+class NodeStoreAPI(soloDB: RocksDB) extends NodeStoreSPI {
 
-  private val soloDB = RocksDBStorage.getDB(s"${dbPath}/solo")
   private val nodeStore = new NodeStore(soloDB)
+  println("nodeStore finished")
   private val nodeLabelStore = new NodeLabelStore(soloDB)
+  println("nodeLabelStore finished")
   private val nodeLabelName = new NodeLabelNameStore(soloDB)
+  println("nodeLabelName finished")
   private val propertyName = new PropertyNameStore(soloDB)
+  println("propertyName finished")
   private val idGenerator = new NodeIdGenerator(soloDB)
+  println("idGenerator finished")
 //  private val nodeDB = RocksDBStorage.getDB(s"${dbPath}/nodes")
 //  private val nodeStore = new NodeStore(nodeDB)
 //  private val nodeLabelDB = RocksDBStorage.getDB(s"${dbPath}/nodeLabel")
@@ -152,7 +157,7 @@ class NodeStoreAPI(dbPath: String) extends NodeStoreSPI {
 
   override def close(): Unit ={
     idGenerator.flush()
-    soloDB.close()
+//    soloDB.close()
 //    nodeDB.close()
 //    nodeLabelDB.close()
 //    metaDB.close()

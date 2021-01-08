@@ -67,7 +67,7 @@ trait NameStore {
     val prefix = keyPrefixFunc()
     val iter = db.newIterator()
     iter.seek(prefix)
-
+    println("iter.seek finished")
     while (iter.isValid && iter.key().startsWith(prefix)) {
       val key = iter.key()
       val id = ByteUtils.getInt(key, 1)
@@ -77,6 +77,7 @@ trait NameStore {
       mapInt2String += id -> name
       iter.next()
     }
+    println("iter.next finished")
     idGenerator.set(maxId)
   }
 
