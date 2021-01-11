@@ -117,7 +117,7 @@ object KeyHandler {
     ByteUtils.setInt(bytes, 1, indexId)
     ByteUtils.setByte(bytes, 5, typeCode)
     for (i <- value.indices)
-      bytes(6+i) = value(i)
+      bytes(5+i) = value(i)
     bytes
   }
 
