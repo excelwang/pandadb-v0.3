@@ -45,15 +45,16 @@ class RelationAPITest {
     Profiler.timing({
       println("match (n:label0)-[r]->(m:label1) return r limit 10000")
 
-      val label0 = graphFacade.nodeStore.getLabelId("label5")
-      val label1 = graphFacade.nodeStore.getLabelId("label6")
+      val label0 = graphFacade.nodeStore.getLabelId("label0")
+      val label1 = graphFacade.nodeStore.getLabelId("label1")
       val limit = 10000
-
+      println(label0, label1)
       val res = graphFacade.nodeStore
         .getNodeIdsByLabel(label0)
         .flatMap(graphFacade.relationStore.findOutRelations)
         .filter(rel =>graphFacade.nodeStore.hasLabel(rel.to, label1))
         .take(limit)
+//      res.take(10).foreach(println)
       println(res.length)
     })
 
@@ -66,6 +67,7 @@ class RelationAPITest {
       val label2 = graphFacade.nodeStore.getLabelId("label2")
       val limit = 10000
 
+      println(label1, label2)
       val res = graphFacade.nodeStore
         .getNodeIdsByLabel(label0)
         .flatMap(graphFacade.relationStore.findOutRelations)
@@ -75,6 +77,7 @@ class RelationAPITest {
         .filter(rel =>graphFacade.nodeStore.hasLabel(rel.to, label2))
         .take(limit)
 
+//      res.take(10).foreach(println)
       println(res.length)
     })
 
@@ -87,6 +90,7 @@ class RelationAPITest {
       val label3 = graphFacade.nodeStore.getLabelId("label3")
       val limit = 1000
 
+      println(label2, label3)
       val res = graphFacade.nodeStore
         .getNodeIdsByLabel(label0)
         .flatMap(graphFacade.relationStore.findOutRelations)
@@ -98,6 +102,7 @@ class RelationAPITest {
         .flatMap(graphFacade.relationStore.findOutRelations)
         .filter(rel =>graphFacade.nodeStore.hasLabel(rel.to, label3))
         .take(limit)
+//      res.take(10).foreach(println)
       println(res.length)
     })
 
@@ -109,11 +114,13 @@ class RelationAPITest {
       val type0  = graphFacade.relationStore.getRelationTypeId("type0")
       val limit = 10000//000
 
+      println(label0, label1)
       val res = graphFacade.nodeStore
         .getNodeIdsByLabel(label0)
         .flatMap(graphFacade.relationStore.findOutRelations(_, type0))
         .filter(rel=>graphFacade.nodeStore.hasLabel(rel.to, label1))
         .take(limit)
+//      res.take(10).foreach(println)
       println(res.length)
     })
 //

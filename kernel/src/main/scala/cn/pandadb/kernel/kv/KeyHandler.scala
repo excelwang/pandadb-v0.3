@@ -13,8 +13,8 @@ object KeyHandler {
   object KeyType extends Enumeration {
     type KeyType = Value
 
-    val Node = Value(1)     // [keyType(1Byte),nodeId(8Bytes)] -> nodeValue(id, labels, properties)
-    val NodeLabelIndex = Value(2)     // [keyType(1Byte),labelId(4Bytes),nodeId(8Bytes)] -> null
+    val Node = Value(1)     // [keyType(1Byte),labelId(4Bytes), nodeId(8Bytes)] -> nodeValue(id, labels, properties)
+    val NodeLabelIndex = Value(2)     // [keyType(1Byte),nodeId(8Bytes),labelId(4Bytes)] -> null
     val NodePropertyIndexMeta = Value(3)     // [keyType(1Byte),labelId(4Bytes),properties(x*4Bytes)] -> null
     val NodePropertyIndex = Value(4)  // // [keyType(1Bytes),indexId(4),propValue(xBytes),valueLength(xBytes),nodeId(8Bytes)] -> null
 
@@ -74,7 +74,7 @@ object KeyHandler {
     val bytes = new Array[Byte](1+4+4*props.length+1)
     ByteUtils.setByte(bytes, 0, KeyType.NodePropertyIndexMeta.id.toByte)
     ByteUtils.setInt(bytes, 1, labelId)
-    var index=6
+    var index=5
     props.foreach{
       p=>ByteUtils.setInt(bytes,index,p)
         index+=4
