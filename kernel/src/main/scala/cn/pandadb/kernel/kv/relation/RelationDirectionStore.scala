@@ -78,7 +78,7 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
     override def hasNext: Boolean = iter.isValid && iter.key().startsWith(prefix)
 
     override def next(): Long = {
-      val fromNodeId = ByteUtils.getLong(iter.key(), 12)
+      val fromNodeId = ByteUtils.getLong(iter.key(), 13)
       iter.next()
       fromNodeId
     }
@@ -125,9 +125,9 @@ class RelationDirectionStore(db: RocksDB, DIRECTION: Direction) {
 
     override def next(): StoredRelation = {
       val key = iter.key()
-      val node1 = ByteUtils.getLong(key, 0)
-      val relType = ByteUtils.getInt(key, 8)
-      val node2  = ByteUtils.getLong(key, 12)
+      val node1 = ByteUtils.getLong(key, 1)
+      val relType = ByteUtils.getInt(key, 9)
+      val node2  = ByteUtils.getLong(key, 13)
       val id = ByteUtils.getLong(iter.value(), 0)
 
       val res =

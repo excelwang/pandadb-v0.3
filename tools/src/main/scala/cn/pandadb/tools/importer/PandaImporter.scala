@@ -27,7 +27,7 @@ object PandaImporter extends Logging{
     logger.info("Import task started.")
     nodeImporter.importNodes()
     relationImporter.importRelations()
-    PDBMetaData.persist(args(0))
+    PDBMetaData.persist(soloDB)
     logger.info("import task finished.")
   }
 

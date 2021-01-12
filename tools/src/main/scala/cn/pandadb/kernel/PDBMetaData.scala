@@ -1,10 +1,9 @@
 package cn.pandadb.kernel
 
 import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
-
 import cn.pandadb.kernel.kv.{ByteUtils, KeyHandler, RocksDBStorage}
 import cn.pandadb.kernel.util.serializer.BaseSerializer
-import org.rocksdb.FlushOptions
+import org.rocksdb.{FlushOptions, RocksDB}
 
 /**
  * @Author: Airzihao
@@ -26,45 +25,35 @@ object PDBMetaData {
   private val _typeIdManager: MetaIdManager = new MetaIdManager(Int.MaxValue)
   private val _labelIdManager: MetaIdManager = new MetaIdManager(Int.MaxValue)
 
-  def persist(dbPath: String): Unit = {
-    val rocksDB = RocksDBStorage.getDB(s"${dbPath}/metadata")
+  def persist(rocksDB: RocksDB): Unit = {
     rocksDB.put("_nodeIdAllocator".getBytes(), BaseSerializer.serialize(_nodeIdAllocator.get()))
     rocksDB.put("_relationIdAllocator".getBytes(), BaseSerializer.serialize(_relationIdAllocator.get()))
     rocksDB.put("_indexIdAllocator".getBytes(), BaseSerializer.serialize(_indexIdAllocator.get()))
     rocksDB.put("_propIdManager".getBytes(), _propIdManager.serialized)
     rocksDB.put("_typeIdManager".getBytes(), _typeIdManager.serialized)
     rocksDB.put("_labelIdManager".getBytes(), _labelIdManager.serialized)
-
-    val nodeMetaDB = RocksDBStorage.getDB(s"${dbPath}/nodeMeta")
-    val relMetaDB = RocksDBStorage.getDB(s"${dbPath}/relationMeta")
-    nodeMetaDB.put(KeyHandler.nodeIdGeneratorKeyToBytes(), ByteUtils.longToBytes(_nodeIdAllocator.get()))
-    relMetaDB.put(KeyHandler.relationIdGeneratorKeyToBytes(), ByteUtils.longToBytes(_relationIdAllocator.get()))
+    rocksDB.put(KeyHandler.nodeIdGeneratorKeyToBytes(), ByteUtils.longToBytes(_nodeIdAllocator.get()))
+    rocksDB.put(KeyHandler.relationIdGeneratorKeyToBytes(), ByteUtils.longToBytes(_relationIdAllocator.get()))
     _labelIdManager.all.foreach{
       kv=>
         val key = KeyHandler.nodeLabelKeyToBytes(kv._1)
-        nodeMetaDB.put(key, ByteUtils.stringToBytes(kv._2))
+        rocksDB.put(key, ByteUtils.stringToBytes(kv._2))
     }
     _typeIdManager.all.foreach{
       kv=>
         val key = KeyHandler.relationTypeKeyToBytes(kv._1)
-        relMetaDB.put(key, ByteUtils.stringToBytes(kv._2))
+        rocksDB.put(key, ByteUtils.stringToBytes(kv._2))
     }
     _propIdManager.all.foreach{
       kv=>
         val key = KeyHandler.propertyNameKeyToBytes(kv._1)
-        nodeMetaDB.put(key, ByteUtils.stringToBytes(kv._2))
-        relMetaDB.put(key, ByteUtils.stringToBytes(kv._2))
+        rocksDB.put(key, ByteUtils.stringToBytes(kv._2))
+        rocksDB.put(key, ByteUtils.stringToBytes(kv._2))
     }
-    nodeMetaDB.flush(new FlushOptions)
-    nodeMetaDB.close()
-    relMetaDB.flush(new FlushOptions)
-    relMetaDB.close()
     rocksDB.flush(new FlushOptions)
-    rocksDB.close()
   }
 
-  def init(dbPath: String): Unit = {
-    val rocksDB = RocksDBStorage.getDB(s"${dbPath}/metadata")
+  def init(rocksDB: RocksDB): Unit = {
     _nodeIdAllocator.set(BaseSerializer.bytes2Long(rocksDB.get("_nodeIdAllocator".getBytes())))
     _relationIdAllocator.set(BaseSerializer.bytes2Long(rocksDB.get("_relationIdAllocator".getBytes())))
     _indexIdAllocator.set(BaseSerializer.bytes2Int(rocksDB.get("_indexIdAllocator".getBytes())))

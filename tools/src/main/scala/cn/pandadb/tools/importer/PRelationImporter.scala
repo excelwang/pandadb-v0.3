@@ -50,7 +50,7 @@ class PRelationImporter(dbPath: String, headFile: File, edgeFile: File, soloDB: 
 
   def importRelations(): Unit ={
     importData()
-    soloDB.close()
+//    soloDB.close()
 //    inRelationDB.close()
 //    outRelationDB.close()
 //    relationTypeDB.close()

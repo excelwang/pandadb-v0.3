@@ -48,7 +48,12 @@ class RelationAPITest {
       val label0 = graphFacade.nodeStore.getLabelId("label0")
       val label1 = graphFacade.nodeStore.getLabelId("label1")
       val limit = 10000
-      println(label0, label1)
+//      graphFacade.nodeStore.getNodesByLabel(label0).take(10).foreach(n=>{
+//        println(n.properties, n.id, n.labelIds.toSet)
+//      })
+//      graphFacade.nodeStore
+//        .getNodeIdsByLabel(label0).take(10)//.foreach(println)
+//        .flatMap(graphFacade.relationStore.findOutRelations).take(10).foreach(s=>println(s.from, s.to, s.typeId))
       val res = graphFacade.nodeStore
         .getNodeIdsByLabel(label0)
         .flatMap(graphFacade.relationStore.findOutRelations)
